@@ -1,0 +1,22 @@
+sp {propose*fill
+   (state <s> ^name water-jug
+              ^jug <j>)
+   (<j> ^empty > 0)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name fill
+        ^fill-jug <j>)
+}
+
+sp {apply*fill
+   (state <s> ^name water-jug
+              ^operator <o>
+              ^jug <j>)
+   (<o> ^name fill
+        ^fill-jug <j>)
+   (<j> ^volume <v>
+        ^contents <c>)
+-->
+   (<j> ^contents <v>)
+   (<j> ^contents <c> -)
+}

@@ -1,0 +1,11 @@
+sp {propose*pour
+   (state <s> ^name water-jug
+              ^jug <j>
+              ^jug <i> <> <j>)
+   (<j> ^empty > 0)
+   (<i> ^contents > 0)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name pour
+        ^pour-jug <j>)
+}
