@@ -48,9 +48,6 @@ public class KeyboardMind {
                 frame.pack();
                 frame.setVisible(true);
                 
-//                WorldPoint position = c.getPosition();
-//                double pitch = c.getPitch();
-//                c.moveto(1, 400, 300);
             } catch (CommandExecException e) {
                 System.out.println("Erro capturado"); 
             }
