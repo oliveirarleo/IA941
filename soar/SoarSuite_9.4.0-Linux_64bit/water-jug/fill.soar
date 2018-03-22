@@ -19,4 +19,5 @@ sp {apply*fill
 -->
    (<j> ^contents <v>)
    (<j> ^contents <c> -)
+   (write (crlf) |fill jug:| <v> | which has:| <c>)
 }

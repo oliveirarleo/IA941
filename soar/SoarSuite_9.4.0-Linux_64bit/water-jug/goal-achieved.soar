@@ -1,0 +1,8 @@
+sp {detect*goal-achieved
+   (state <s> ^name water-jug
+              ^jug <j>)
+   (<j> ^volume 3
+        ^contents 1)
+-->
+   (write (crlf) |The problem has been solved.|)
+   (halt)}

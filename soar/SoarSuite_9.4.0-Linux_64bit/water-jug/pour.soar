@@ -1,11 +1,49 @@
 sp {propose*pour
    (state <s> ^name water-jug
               ^jug <j>
-              ^jug <i> <> <j>)
+              ^jug { <> <i> <j> })
    (<j> ^empty > 0)
    (<i> ^contents > 0)
 -->
-   (<s> ^operator <o> +)
+   (<s> ^operator <o> + =)
    (<o> ^name pour
-        ^pour-jug <j>)
-}
+        ^empty-jug <i>
+        ^fill-jug <j>)}
+
+# if i will be empty
+
+sp {apply*pour*will-empty
+   (state <s> ^name water-jug
+              ^operator <o>)
+   (<o> ^name pour
+        ^empty-jug <i>
+        ^fill-jug <j>)
+   (<i> ^volume <ivol>
+        ^contents { <icon> > <jempty> })
+   (<j> ^volume <jvol>
+        ^contents <jcon>
+        ^empty <jempty>)
+-->
+   (<new
+   (<i> ^contents (- <icon> <jempty>) <icon> - )
+   (<j> ^contents <jvol> <jcon> -)
+   (write (crlf) |pour jug:| <ivol> | in:| <jvol> | contents:| <icon> | | <jcon> | --> | (- <icon> <jempty>) | | <j> ^contents )}
+   
+# if i will not empty
+   
+sp {apply*pour*will-not-empty
+   (state <s> ^name water-jug
+              ^operator <o>)
+   (<o> ^name pour
+        ^empty-jug <i>
+        ^fill-jug <j>)
+   (<j> ^volume <jvol>
+        ^contents <jcon>
+        ^empty <jemp>)
+   (<i> ^volume <ivol>
+        ^contents { <icon> <= <jemp> })
+-->
+   (<i> ^contents 0 <icon> -)
+   (<j> ^contents (+ <jcon> <icon>) <jcon> - )
+   (write (crlf) |pour jug:| <ivol> | in:| <jvol> | contents -->| <icon> | | <jcon>)}
+   

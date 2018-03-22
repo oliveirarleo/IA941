@@ -3,7 +3,22 @@ sp {propose*empty
               ^jug <j>)
    (<j> ^contents > 0)
 -->
-   (<s>  ^operator <o> +)
+   (<s>  ^operator <o> + =)
    (<o> ^name empty
         ^empty-jug <j>)
+}
+
+
+sp {apply*empty
+   (state <s> ^name water-jug
+              ^operator <o>
+              ^jug <j>)
+   (<o> ^name empty
+        ^empty-jug <j>)
+   (<j> ^volume <v>
+        ^contents <c>)
+-->
+   (<j> ^contents 0)
+   (<j> ^contents <c> -)
+   (write (crlf) | empty jug:| <v> | with:| <c>)
 }
