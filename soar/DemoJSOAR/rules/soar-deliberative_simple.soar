@@ -1,0 +1,576 @@
+################################################################################
+########################## SOAR DELIVERATIVE BEHAVIOR ##########################
+################################################################################
+
+################################################################################
+# @author: Leonardo Ramos ######################################################
+# @ra: 171941             ######################################################
+################################################################################
+
+################################  CONFIGURATION ################################
+watch 5
+learn --off
+epmem --set learning off 
+#smem --off
+#log --level error
+
+
+################################################################################
+# INIT                        ##################################################
+################################################################################
+
+####### FIRST INIT #############################################################
+# propose 
+sp {sol*propose*initialize
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name initialize-leaflet-deliberative)
+}
+
+# apply
+sp {sol*apply*initialize
+   (state <s>  ^operator.name initialize-leaflet-deliberative
+               ^io.input-link <il>)
+   (<il> ^OBJECTIVE <ob>
+         ^WORLD <wr>)
+-->
+   (<s>  ^name sol
+         ^OBJECTIVE <nob>
+         ^PLAN <plan>
+         ^WORLD <nwr>)
+   (<plan> ^numberPlanned 0)
+   (<nob>   ^NUMLEAFLETS 0
+            ^NUMDECIDED 0)
+}
+
+####### LEAFLET ################################################################
+
+# INPUT LINK HAS LEAFLET NUMBER <ilNumber> BUT MEMORY DOES NOT
+# PROPOSE
+sp {sol*propose*copy*structure*leaflet-number
+   (state <s>  ^io.input-link.OBJECTIVE.LEAFLET.NUMBER <ilNumber>
+               ^OBJECTIVE <sObj>)
+   (<sObj>     -^LEAFLET.NUMBER <ilNumber>)
+-->
+   (<s> ^operator <oper> + =)
+   (<oper>  ^name leaf-num-oper
+            ^stNumber <ilNumber>)
+}
+
+# APPLY
+sp {sol*apply*leaflet-number
+   (state <s>  ^operator <o>
+               ^OBJECTIVE <obj>)
+   (<o>  ^name leaf-num-oper
+         ^stNumber <sNumr>)
+-->
+   (<obj>         ^LEAFLET <soLeaflet>)
+   (<soLeaflet>   ^NUMBER <sNumr>)
+}
+
+
+####### COLOR ##################################################################
+# INPUT LINK HAS COLOR WITH NUMBER <ilcNumber> BUT MEMORY DOES NOT
+# PROPOSE
+sp {sol*propose*copy*values
+   (state <s>  ^io.input-link <il>
+               ^OBJECTIVE <sobj>)
+   (<il>       ^OBJECTIVE.LEAFLET <ilLeaf>)
+   (<sobj>     ^LEAFLET <sLeaf>)
+
+   (<ilLeaf>   ^COLOR <illColor>
+               ^NUMBER <illNumber>)
+   (<illColor> ^VALUE <ilcValue>
+               ^NUMBER <ilcNumber>)
+
+   (<sLeaf> ^NUMBER <illNumber>
+            -^COLOR.NUMBER <ilcNumber>)
+-->
+   (<s>  ^operator <oper> + =)
+   (<oper>  ^name copy-values
+            ^objective <sobj>
+            ^stLeaflet <sLeaf>
+            ^colorValue <ilcValue>
+            ^colorNumber <ilcNumber>)
+}
+
+# APPLY
+sp {sol*apply*copy*values
+   (state <s> ^operator <oper>)
+   (<oper>  ^name copy-values
+            ^objective <sobj>
+            ^stLeaflet <sLeaf>
+            ^colorValue <ilcValue>
+            ^colorNumber <ilcNumber>)
+   (<sobj> ^NUMLEAFLETS <oldNum>)
+-->
+   (<sLeaf> ^COLOR <col>)
+   (<col>   ^VALUE <ilcValue>
+            ^NUMBER <ilcNumber>)
+   (<sobj> ^NUMLEAFLETS <oldNum> -)
+   (<sobj> ^NUMLEAFLETS (+ <oldNum> 1))
+}
+
+
+####### COPY WORLD #############################################################
+# PROPOSE
+sp {sol*propose*copy*world
+   (state <s>  ^WORLD <sw>
+               ^io.input-link.WORLD.ENTITY <ilEntity>)
+   (<ilEntity> ^NAME <ilname>)
+   (<sw>       -^ENTITY.NAME <ilname>)
+-->
+   (<s>     ^operator <oper> + =)
+   (<oper>  ^name copy-world
+            ^ent <ilEntity>)
+}
+
+# APPLY
+sp {sol*apply*copy*world
+   (state <s>  ^operator <oper>
+               ^WORLD <w>)
+   (<oper>  ^name copy-world
+            ^ent <ilEnt>)
+   (<ilEnt> ^NAME <eName>
+            ^TYPE <eType>
+            ^COLOR <eColor>
+            ^DISTANCE <eDistance>
+            ^X <eX>
+            ^Y <eY>
+            ^X2 <eX1>
+            ^Y2 <eY1>)
+-->
+   (<w> ^ENTITY <sEnt>)
+   (<sEnt>  ^NAME <eName>
+            ^TYPE <eType>
+            ^COLOR <eColor>
+            ^DISTANCE <eDistance>
+            ^X <eX>
+            ^Y <eY>
+            ^X2 <eX1>
+            ^Y2 <eY1>)
+}
+
+################################################################################
+# DECIDE JEWEL                ##################################################
+################################################################################
+# PROPOSE
+sp {sol*propose*decide*jewel
+   (state <s>  ^OBJECTIVE.LEAFLET.COLOR <col>
+               ^WORLD <world>)
+   (<world> ^ENTITY <wEnt>)
+   (<wEnt>  ^COLOR <cValue>
+            ^TYPE JEWEL
+            -^CHOSEN)
+   (<col>   ^VALUE <cValue>
+            -^DONE
+            -^ENTITY)
+-->
+   (<s> ^operator <oper> +)
+   (<oper>  ^name decide-jewel
+            ^color <col>
+            ^ent <wEnt>)
+}
+
+# APPLY
+sp {sol*apply*decide*jewel
+   (state <s> ^operator <oper>
+               ^OBJECTIVE <obj>
+               ^WORLD <w>)
+   (<oper>  ^name decide-jewel
+            ^color <col>
+            ^ent <ent>)
+   (<obj> ^NUMDECIDED <oldNum>)
+-->
+   # (<w> ^ENTITY <ent> -)
+   (<col>   ^ENTITY <ent>
+            ^DONE <oldNum>)
+   (<ent>   ^CHOSEN false)
+   (<obj> ^NUMDECIDED <oldNum> -)
+   (<obj> ^NUMDECIDED (+ <oldNum> 1))
+}
+
+# IMPASSE ##################################################
+
+sp {tie-impasse*decide-jewel1
+   (state <s> ^attribute operator 
+              ^impasse tie
+              ^item <o> {<> <o> <o2>}
+              ^superstate <ss>)
+   (<o>  ^name decide-jewel
+         ^ent <e1>
+         ^color <col1>)
+   (<e1> ^DISTANCE <dist>)
+   (<o2> ^name decide-jewel
+         ^ent <e2>
+         ^color <col2> = <col1>)
+   (<e2> ^DISTANCE <dist2> <= <dist>)
+-->
+   (<ss> ^operator <o2> > <o>)
+}
+
+sp {tie-impasse*decide-jewel2
+   (state <s> ^attribute operator 
+              ^impasse tie
+              ^item <o> {<> <o> <o2>}
+              ^superstate <ss>)
+   (<o>  ^name decide-jewel
+         ^ent <e1>
+         ^color <col1>)
+   (<o2> ^name decide-jewel
+         ^ent <e2>
+         ^color <col2> <> <col1>)
+   (<col1> ^NUMBER <n1>)
+   (<col2> ^NUMBER <n2> < <n1>)
+-->
+   (<ss> ^operator <o2> > <o>)
+}
+
+sp {tie-impasse*decide-jewel*others
+   (state <s> ^attribute operator 
+              ^impasse tie
+              ^item <o> {<> <o> <o2>}
+              ^superstate <ss>)
+   (<o>  ^name decide-jewel)
+   (<o2> ^name << copy-world copy-values leaf-num-oper >>)
+-->
+   (<ss> ^operator <o2> > <o>)
+
+}
+
+# ################################################################################
+# # PLAN                        ##################################################
+# ################################################################################
+# PROPOSE
+sp {sol*propose*plan*move-jewel
+   (state <s>  ^name sol
+                ^PLAN <plan>
+               ^OBJECTIVE <obj>)
+   (<obj> ^LEAFLET.COLOR.ENTITY <ent>)
+   # (<plan> ⁻^command.ent <ent>)
+   (<ent> ^CHOSEN false)
+-->
+   (<s> ^operator <oper> +)
+   (<oper>  ^name plan-move
+            ^ent <ent>)
+}
+
+# sp {sol*propose*plan*move-food
+#    (state <s>  ^name sol
+#                 ^io.input-link <il>
+#                 ^WORLD <w>
+#                ^PLAN <plan>)
+#    # (<il> ^CREATURE.SENSOR.FUEL.VALUE <= 800)
+#    (<w> ^ENTITY <ent>)
+#    (<ent> -^CHOSEN
+#           ^TYPE FOOD)
+# -->
+#    (<s> ^operator <oper> +)
+#    (<oper>  ^name plan-move
+#             ^ent <ent>)
+# }
+
+# APPLY
+sp {sol*apply*plan
+   (state <s> ^operator <oper>
+               ^OBJECTIVE <obj>
+               ^PLAN <plan>)
+   (<plan> ^numberPlanned <planNum>)
+   (<oper>  ^name plan-move
+            ^ent <ent>)
+   (<ent> ^CHOSEN <chos>)
+-->
+   (<plan> ^command <comm>)
+   (<comm> ^ent <ent>
+            ^num <planNum>)
+   (<ent> ^CHOSEN <chos> -)
+   (<ent> ^CHOSEN true)
+   (<plan> ^numberPlanned (+ <planNum> 1))
+   (<plan> ^numberPlanned <planNum> -)
+
+}
+
+sp {tie-impasse*plan*plan
+   (state <s> ^attribute operator 
+              ^impasse tie
+              ^item <o> {<> <o> <o2>}
+              ^superstate <ss>)
+   (<o>  ^name plan-move
+          ^ent <ent1>)
+
+   (<o2> ^name plan-move
+          ^ent <ent2>)
+
+   (<ent1> ^DISTANCE <dist1>)
+   (<ent2> ^DISTANCE <dist2> < <dist1>)
+-->
+   (<ss> ^operator <o2> > <o>)
+}
+
+sp {tie-impasse*plan*others
+   (state <s> ^attribute operator 
+              ^impasse tie
+              ^item <o> {<> <o> <o2>}
+              ^superstate <ss>)
+   (<o>  ^name plan-move)
+   (<o2> ^name << copy-values copy-world leaf-num-oper decide-jewel >>)
+-->
+   (<ss> ^operator <o2> > <o>)
+}
+
+
+################################################################################
+# STAND STILL                  #################################################
+################################################################################
+
+sp {sol*propose*stand-still
+   (state <s> ^attribute state
+              ^impasse no-change                           
+              ^superstate <ss>)
+   (<ss> ^io.input-link <il>)
+   (<ss> ^superstate nil)
+-->
+   (<ss> ^operator <o> +)
+   (<o> ^name stand-still)}
+
+
+sp {sol*apply*stand-still
+   (state <s> ^operator <o>
+              ^io <io>)
+   (<io> ^output-link <ol>)
+   (<o> ^name stand-still)
+-->
+   (<ol> ^MOVE <command>)
+   (<command> ^Vel 0)
+   (<command> ^VelR 0)
+   (<command> ^VelL 0)
+}
+
+
+sp {tie-impasse*stand*others1
+   (state <s> ^attribute operator 
+              ^impasse tie
+              ^item <o> {<> <o> <o2>}
+              ^superstate <ss>)
+   (<o>  ^name stand-still)
+
+   (<o2> ^name << copy-values copy-world leaf-num-oper decide-jewel plan-move move-jewel get-jewel get-food >>)
+-->
+   (<ss> ^operator <o2> > <o>)
+}
+
+# sp {tie-impasse*stand*others2
+#    (state <s> ^attribute operator 
+#               ^impasse tie
+#               ^item <o> {<> <o> <o2>}
+#               ^superstate <ss>)
+#    (<o>  ^name stand-still)
+
+#    (<o2> ^name << copy-values copy-world leaf-num-oper decide-jewel plan-move >>)
+# -->
+#    (<ss> ^operator <o2> > <o>)
+# }
+
+################################################################################
+# MOVE JEWEL                   #################################################
+################################################################################
+
+sp {sol*propose*move-jewel
+   (<s>  ^PLAN <plan>)
+   (<plan> ^command <c>)
+   (<c> ^num 0
+        ^ent <ent>)
+-->
+   (<s> ^operator <oper> +)
+   (<oper>  ^name move-jewel
+            ^ent <ent>)
+}
+
+sp {sol*apply*move-jewel
+   (state <s>  ^io.output-link <ol>
+               ^operator <oper>)
+   (<oper>  ^name move-jewel
+            ^ent <ent>)
+   (<ent>   ^X <x>
+            ^Y <y>)
+-->
+   (<ol> ^MOVE <command>)
+   (<command> ^Vel 2)
+   (<command> ^VelR 2)
+   (<command> ^VelL 2)
+   (<command> ^X <x>)
+   (<command> ^Y <y>)
+
+}
+
+sp {tie-impasse*move*others
+   (state <s> ^attribute operator 
+              ^impasse tie
+              ^item <o> {<> <o> <o2>}
+              ^superstate <ss>)
+   (<o>  ^name move-jewel)
+
+   (<o2> ^name << copy-values copy-world leaf-num-oper decide-jewel plan-move move-food get-jewel get-food >>)
+-->
+   (<ss> ^operator <o2> > <o>)
+}
+
+
+################################################################################
+# GET JEWEL                  ###################################################
+################################################################################
+
+sp {propose*get-jewel
+   # (state <s> ^OBJECTIVE.LEAFLET.COLOR.ENTITY <entity>)
+   (state <s>   ^name sol
+                ^io.input-link.WORLD.ENTITY <entity>)
+   (<entity>   ^DISTANCE <jewelDistance> < 30
+               ^TYPE JEWEL
+               ^NAME <jName>)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name get-jewel
+         ^jewName <jName>)
+}
+
+sp {apply*get-jewel
+   (state <s>  ^operator <oper>
+               ^io.output-link <ol>)
+   (<oper>  ^name get-jewel
+            ^jewName <jName>)
+-->
+   (<ol> ^GET <command>)
+   (<command> ^Name <jName>)
+}
+
+sp {tie-impasse*get-jewel*others1
+   (state <s> ^attribute operator 
+              ^impasse tie
+              ^item <o> {<> <o> <o2>}
+              ^superstate <ss>)
+   (<o>  ^name get-jewel)
+
+   (<o2> ^name << copy-values copy-world leaf-num-oper decide-jewel plan-move get-food >>)
+-->
+   (<ss> ^operator <o2> > <o>)
+}
+
+################################################################################
+# MOVE FOOD                  ###################################################
+################################################################################
+
+sp {sol*propose*plan*move-food
+   (state <s>  ^name sol
+                ^io.input-link <il>
+                ^WORLD <w>
+               ^PLAN <plan>)
+   (<il> ^CREATURE.SENSOR.FUEL.VALUE <= 900)
+   (<w> ^ENTITY <ent>)
+   (<ent> ^TYPE FOOD)
+-->
+   (<s> ^operator <oper> +)
+   (<oper>  ^name move-food
+            ^ent <ent>)
+}
+
+sp {apply*move-food
+   (state <s>  ^operator <oper>
+               ^io.output-link <ol>)
+   (<oper>  ^name move-food
+            ^ent <ent>)
+   (<ent>   ^X <x>
+            ^Y <y>)
+-->
+   (<ol> ^MOVE <command>)
+   (<command> ^Vel 2)
+   (<command> ^VelR 2)
+   (<command> ^VelL 2)
+   (<command> ^X <x>)
+   (<command> ^Y <y>)
+}
+
+sp {tie-impasse*move-food*move-food
+   (state <s> ^attribute operator 
+              ^impasse tie
+              ^item <o> {<> <o> <o2>}
+              ^superstate <ss>)
+   (<o>  ^name move-food
+          ^ent <ent1>)
+
+   (<o2> ^name move-food
+          ^ent <ent2>)
+
+   (<ent1> ^DISTANCE <dist1>)
+   (<ent2> ^DISTANCE <dist2> < <dist1>)
+-->
+   (<ss> ^operator <o2> > <o>)
+}
+
+sp {tie-impasse*move-food*others1
+   (state <s> ^attribute operator 
+              ^impasse tie
+              ^item <o> {<> <o> <o2>}
+              ^superstate <ss>)
+   (<o>  ^name move-food)
+
+   (<o2> ^name << copy-values copy-world leaf-num-oper decide-jewel plan-move get-jewel get-food >>)
+-->
+   (<ss> ^operator <o2> > <o>)
+}
+
+
+################################################################################
+# EAT FOOD                   ###################################################
+################################################################################
+
+sp {propose*get-food
+   # (state <s> ^OBJECTIVE.LEAFLET.COLOR.ENTITY <entity>)
+   (state <s> ^name sol
+              ^io.input-link.WORLD.ENTITY <entity>)
+   (<entity>   ^DISTANCE <Distance> < 30
+               ^TYPE FOOD
+               ^NAME <fName>)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name get-food
+         ^foodName <fName>)
+}
+
+sp {apply*get-food
+   (state <s>  ^operator <oper>
+               ^io.output-link <ol>)
+   (<oper>  ^name get-food
+            ^foodName <fName>)
+-->
+   (<ol> ^EAT <command>)
+   (<command> ^Name <fName>)
+}
+
+sp {tie-impasse*get-food*others1
+   (state <s> ^attribute operator 
+              ^impasse tie
+              ^item <o> {<> <o> <o2>}
+              ^superstate <ss>)
+   (<o>  ^name get-food)
+
+   (<o2> ^name << copy-values copy-world leaf-num-oper decide-jewel plan-move >>)
+-->
+   (<ss> ^operator <o2> > <o>)
+}
+
+
+
+
+################################################################################
+# HALT                         #################################################
+################################################################################
+
+sp {halt*condition
+  (state <s> ^impasse no-change ^type state -^operator ^attribute operator)
+-->
+  # (write I2)
+  #(halt)
+  (interrupt)
+}
