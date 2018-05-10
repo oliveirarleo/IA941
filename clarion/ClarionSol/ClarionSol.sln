@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EloMyQueen", "EloMyQueen\EloMyQueen.csproj", "{20E3962E-F3F9-48DB-B4CD-27DD89E2FEB6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClarionApp", "DemoClarion\ClarionApp\ClarionApp.csproj", "{C103EE32-51CA-49DA-94AD-999A10BB4308}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -13,5 +15,9 @@ Global
 		{20E3962E-F3F9-48DB-B4CD-27DD89E2FEB6}.Debug|x86.Build.0 = Debug|x86
 		{20E3962E-F3F9-48DB-B4CD-27DD89E2FEB6}.Release|x86.ActiveCfg = Release|x86
 		{20E3962E-F3F9-48DB-B4CD-27DD89E2FEB6}.Release|x86.Build.0 = Release|x86
+		{C103EE32-51CA-49DA-94AD-999A10BB4308}.Debug|x86.ActiveCfg = Release|x86
+		{C103EE32-51CA-49DA-94AD-999A10BB4308}.Debug|x86.Build.0 = Release|x86
+		{C103EE32-51CA-49DA-94AD-999A10BB4308}.Release|x86.ActiveCfg = Release|x86
+		{C103EE32-51CA-49DA-94AD-999A10BB4308}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 EndGlobal
