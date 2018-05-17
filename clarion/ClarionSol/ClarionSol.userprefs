@@ -1,15 +1,15 @@
 ﻿<Properties StartupItem="DemoClarion/ClarionApp/ClarionApp.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="DemoClarion/ClarionApp/MainClass.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="DemoClarion/ClarionApp/ClarionAgent.cs">
     <Files>
-      <File FileName="DemoClarion/ClarionApp/MainClass.cs" Line="60" Column="35" />
-      <File FileName="DemoClarion/ClarionApp/MindViewer.cs" Line="9" Column="17" />
-      <File FileName="DemoClarion/ClarionApp/ClarionAgent.cs" Line="424" Column="20" />
-      <File FileName="DemoClarion/ClarionApp/WSProxy.cs" Line="661" Column="1" />
-      <File FileName="EloMyQueen/Program.cs" Line="18" Column="22" />
-      <File FileName="DemoClarion/ClarionApp/Model/Thing.cs" Line="27" Column="23" />
-      <File FileName="DemoClarion/ClarionApp/Model/Material3d.cs" Line="8" Column="5" />
-      <File FileName="DemoClarion/ClarionApp/Util/RandomGenerator.cs" Line="19" Column="3" />
+      <File FileName="DemoClarion/ClarionApp/MainClass.cs" Line="56" Column="5" />
+      <File FileName="DemoClarion/ClarionApp/MindViewer.cs" Line="1" Column="1" />
+      <File FileName="DemoClarion/ClarionApp/ClarionAgent.cs" Line="321" Column="36" />
+      <File FileName="DemoClarion/ClarionApp/WSProxy.cs" Line="1" Column="1" />
+      <File FileName="EloMyQueen/Program.cs" Line="1" Column="1" />
+      <File FileName="DemoClarion/ClarionApp/Model/Thing.cs" Line="1" Column="1" />
+      <File FileName="DemoClarion/ClarionApp/Model/Material3d.cs" Line="1" Column="1" />
+      <File FileName="DemoClarion/ClarionApp/Util/RandomGenerator.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
