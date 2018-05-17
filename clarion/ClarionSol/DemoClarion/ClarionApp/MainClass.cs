@@ -59,7 +59,7 @@ namespace ClarionApp
 						for(int i = 0; i < nu_of_foods; i++){
 							ws.NewFood(rg.randomInt(0,2), rg.randomInt(0, ws_width), rg.randomInt(0, ws_lenght));
 						}
-						Thread.Sleep(10000);
+						//Thread.Sleep(10000);
 					//}
 
                     if (!String.IsNullOrWhiteSpace(creatureId))
