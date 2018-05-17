@@ -12,3 +12,10 @@
 /net/nfs1.fee.unicamp.br/export/vol1/home/EC15/ra171941/IA941/clarion/ClarionSol/DemoClarion/ClarionApp/obj/x86/Release/ClarionApp.exe
 /net/nfs1.fee.unicamp.br/export/vol1/home/EC15/ra171941/IA941/clarion/ClarionSol/DemoClarion/ClarionApp/obj/x86/Release/ClarionApp.exe.mdb
 /net/nfs1.fee.unicamp.br/export/vol1/home/EC15/ra171941/IA941/clarion/ClarionSol/DemoClarion/ClarionApp/bin/Release/ClarionLibrary.dll
+/home/kaiju/IA941/clarion/ClarionSol/DemoClarion/ClarionApp/obj/x86/Release/.NETFramework,Version=v4.5.AssemblyAttribute.cs
+/home/kaiju/IA941/clarion/ClarionSol/DemoClarion/ClarionApp/obj/x86/Release/ClarionApp.gtk-gui.gui.stetic
+/home/kaiju/IA941/clarion/ClarionSol/DemoClarion/ClarionApp/bin/Release/ClarionApp.exe.mdb
+/home/kaiju/IA941/clarion/ClarionSol/DemoClarion/ClarionApp/bin/Release/ClarionApp.exe
+/home/kaiju/IA941/clarion/ClarionSol/DemoClarion/ClarionApp/obj/x86/Release/ClarionApp.exe
+/home/kaiju/IA941/clarion/ClarionSol/DemoClarion/ClarionApp/obj/x86/Release/ClarionApp.exe.mdb
+/home/kaiju/IA941/clarion/ClarionSol/DemoClarion/ClarionApp/bin/Release/ClarionLibrary.dll

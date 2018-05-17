@@ -20,7 +20,10 @@ namespace ClarionApp
     {
         DO_NOTHING,
         ROTATE_CLOCKWISE,
-        GO_AHEAD
+        GO_AHEAD,
+		EAT_FOOD,
+		GET_JEWEL,
+		GO_TO_JEWEL
     }
 
     public class ClarionAgent
@@ -34,6 +37,9 @@ namespace ClarionApp
         /// Constant that represents that there is at least one wall ahead
         /// </summary>
         private String DIMENSION_WALL_AHEAD = "WallAhead";
+		private String DIMENSION_FOOD_AHEAD = "FoodAhead";
+		private String DIMENSION_JEWEL_AHEAD = "JewelAhead";
+		private String DIMENSION_NEED_JEWEL = "NeedJewel";
 		double prad = 0;
         #endregion
 
@@ -41,6 +47,11 @@ namespace ClarionApp
 		public MindViewer mind;
 		String creatureId = String.Empty;
 		String creatureName = String.Empty;
+		String jewelFound = String.Empty;
+		String foodFound = String.Empty;
+		double x_go = 100.0;
+		double y_go = 100.0;
+
         #region Simulation
         /// <summary>
         /// If this value is greater than zero, the agent will have a finite number of cognitive cycle. Otherwise, it will have infinite cycles.
@@ -73,6 +84,10 @@ namespace ClarionApp
         /// Perception input to indicates a wall ahead
         /// </summary>
 		private DimensionValuePair inputWallAhead;
+		private DimensionValuePair inputFoodAhead;
+		private DimensionValuePair inputJewelAhead;
+		private DimensionValuePair inputNeedJewel;
+
         #endregion
 
         #region Action Output
@@ -84,7 +99,14 @@ namespace ClarionApp
         /// Output action that makes the agent go ahead
         /// </summary>
 		private ExternalActionChunk outputGoAhead;
-        #endregion
+
+		private ExternalActionChunk outputGetJewel;
+
+		private ExternalActionChunk outputEatFood;
+
+		private ExternalActionChunk outputGoToJewel;
+        
+		#endregion
 
         #endregion
 
@@ -95,16 +117,23 @@ namespace ClarionApp
 			// Initialize the agent
             CurrentAgent = World.NewAgent("Current Agent");
 			mind = new MindViewer();
-			mind.Show ();
+			mind.Show();
 			creatureId = creature_ID;
 			creatureName = creature_Name;
 
             // Initialize Input Information
             inputWallAhead = World.NewDimensionValuePair(SENSOR_VISUAL_DIMENSION, DIMENSION_WALL_AHEAD);
+			inputFoodAhead = World.NewDimensionValuePair(SENSOR_VISUAL_DIMENSION, DIMENSION_FOOD_AHEAD);
+			inputJewelAhead = World.NewDimensionValuePair(SENSOR_VISUAL_DIMENSION, DIMENSION_JEWEL_AHEAD);
+			inputNeedJewel = World.NewDimensionValuePair(SENSOR_VISUAL_DIMENSION, DIMENSION_NEED_JEWEL);
+
 
             // Initialize Output actions
             outputRotateClockwise = World.NewExternalActionChunk(CreatureActions.ROTATE_CLOCKWISE.ToString());
             outputGoAhead = World.NewExternalActionChunk(CreatureActions.GO_AHEAD.ToString());
+			outputGetJewel = World.NewExternalActionChunk(CreatureActions.GET_JEWEL.ToString());
+			outputEatFood = World.NewExternalActionChunk(CreatureActions.EAT_FOOD.ToString());
+			outputGoToJewel = World.NewExternalActionChunk(CreatureActions.GO_TO_JEWEL.ToString());
 
             //Create thread to simulation
             runThread = new Thread(CognitiveCycle);
@@ -133,7 +162,8 @@ namespace ClarionApp
         /// </summary>
         /// <param name="deleteAgent">If true beyond abort the current simulation it will die the agent.</param>
         public void Abort(Boolean deleteAgent)
-        {   Console.WriteLine ("Aborting ...");
+        {
+			Console.WriteLine ("Aborting ...");
             if (runThread != null && runThread.IsAlive)
             {
                 runThread.Abort();
@@ -163,7 +193,8 @@ namespace ClarionApp
 		}
 
 		void processSelectedAction(CreatureActions externalAction)
-		{   Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+		{
+			Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
 			if (worldServer != null && worldServer.IsConnected)
 			{
 				switch (externalAction)
@@ -175,7 +206,25 @@ namespace ClarionApp
 					worldServer.SendSetAngle(creatureId, 2, -2, 2);
 					break;
 				case CreatureActions.GO_AHEAD:
-					worldServer.SendSetAngle(creatureId, 1, 1, prad);
+					//worldServer.SendSetAngle(creatureId, 1, 1, prad);
+					worldServer.SendSetAngle(creatureId, 2, -2, 2);
+					break;
+				case CreatureActions.EAT_FOOD:
+					// CHANGE
+					if(foodFound != String.Empty)
+						worldServer.SendEatIt (creatureId, foodFound);
+					else
+						worldServer.SendSetAngle(creatureId, 2, -2, 2);
+					break;
+				case CreatureActions.GET_JEWEL:
+					if(jewelFound != String.Empty)
+						worldServer.SendSackIt (creatureId, jewelFound);
+					else
+						worldServer.SendSetAngle(creatureId, 2, -2, 2);
+					break;
+				case CreatureActions.GO_TO_JEWEL:
+					worldServer.SendSetGoTo(creatureId, 1, 1, x_go, y_go);
+					//worldServer.SendSetAngle(creatureId, 2, -2, 2);
 					break;
 				default:
 					break;
@@ -208,14 +257,30 @@ namespace ClarionApp
             // Create Rule to avoid collision with wall
             SupportCalculator avoidCollisionWallSupportCalculator = FixedRuleToAvoidCollisionWall;
             FixedRule ruleAvoidCollisionWall = AgentInitializer.InitializeActionRule(CurrentAgent, FixedRule.Factory, outputRotateClockwise, avoidCollisionWallSupportCalculator);
+			// Commit this rule to Agent (in the ACS)
+			CurrentAgent.Commit(ruleAvoidCollisionWall);
 
-            // Commit this rule to Agent (in the ACS)
-            CurrentAgent.Commit(ruleAvoidCollisionWall);
+			// Create Rule to eat food
+			SupportCalculator eatFoodSupportCalculator = FixedRuleToEatFood;
+			FixedRule ruleEatFood= AgentInitializer.InitializeActionRule(CurrentAgent, FixedRule.Factory, outputEatFood, eatFoodSupportCalculator);
+			// Commit this rule to Agent (in the ACS)
+			CurrentAgent.Commit(ruleEatFood);
+
+			// Create Rule to get jewel
+			SupportCalculator getJewelSupportCalculator = FixedRuleToGetJewel;
+			FixedRule ruleGetJewel = AgentInitializer.InitializeActionRule(CurrentAgent, FixedRule.Factory, outputGetJewel, getJewelSupportCalculator);
+			// Commit this rule to Agent (in the ACS)
+			CurrentAgent.Commit(ruleGetJewel);
+
+			// Create Colission To Go To Jewel
+			SupportCalculator goToJewelSupportCalculator = FixedRuleToGoToJewel;
+			FixedRule ruleGoToJewel = AgentInitializer.InitializeActionRule(CurrentAgent, FixedRule.Factory, outputGoToJewel, goToJewelSupportCalculator);
+			// Commit this rule to Agent (in the ACS)
+			CurrentAgent.Commit(ruleGoToJewel);
 
             // Create Colission To Go Ahead
             SupportCalculator goAheadSupportCalculator = FixedRuleToGoAhead;
             FixedRule ruleGoAhead = AgentInitializer.InitializeActionRule(CurrentAgent, FixedRule.Factory, outputGoAhead, goAheadSupportCalculator);
-            
             // Commit this rule to Agent (in the ACS)
             CurrentAgent.Commit(ruleGoAhead);
 
@@ -241,14 +306,43 @@ namespace ClarionApp
         /// <param name="sensorialInformation">The information that came from server</param>
         /// <returns>The perceived information</returns>
 		private SensoryInformation prepareSensoryInformation(IList<Thing> listOfThings)
-        {
-            // New sensory information
-            SensoryInformation si = World.NewSensoryInformation(CurrentAgent);
+		{
+			// New sensory information
+			SensoryInformation si = World.NewSensoryInformation (CurrentAgent);
 
-            // Detect if we have a wall ahead
-            Boolean wallAhead = listOfThings.Where(item => (item.CategoryId == Thing.CATEGORY_BRICK && item.DistanceToCreature <= 21)).Any();
-            double wallAheadActivationValue = wallAhead ? CurrentAgent.Parameters.MAX_ACTIVATION : CurrentAgent.Parameters.MIN_ACTIVATION;
-            si.Add(inputWallAhead, wallAheadActivationValue);
+			// Detect if we have a wall ahead
+			Boolean wallAhead = listOfThings.Where (item => (item.CategoryId == Thing.CATEGORY_BRICK && item.DistanceToCreature <= 21)).Any ();
+			// double wallAheadActivationValue = wallAhead ? CurrentAgent.Parameters.MAX_ACTIVATION : CurrentAgent.Parameters.MIN_ACTIVATION;
+			double wallAheadActivationValue = wallAhead ? CurrentAgent.Parameters.MAX_ACTIVATION : CurrentAgent.Parameters.MIN_ACTIVATION;
+			si.Add (inputWallAhead, wallAheadActivationValue);
+
+			// Detect if we have food close by
+			IEnumerable<Thing> foods = listOfThings.Where (item => ((item.CategoryId == Thing.CATEGORY_NPFOOD || item.CategoryId == Thing.CATEGORY_PFOOD) && item.DistanceToCreature <= 61));
+			double foodAheadActivationValue;
+			if (foods.Any ()) {
+				foodFound = foods.First ().Name;
+				foodAheadActivationValue = CurrentAgent.Parameters.MAX_ACTIVATION;
+			} else {
+				foodFound = String.Empty;
+				foodAheadActivationValue = CurrentAgent.Parameters.MIN_ACTIVATION;
+			}
+			si.Add(inputFoodAhead, foodAheadActivationValue);
+
+
+			// Detect if we have jewel close by
+			IEnumerable<Thing> closeJewels = listOfThings.Where(item => (item.CategoryId == Thing.CATEGORY_JEWEL && item.DistanceToCreature <= 61));
+			double jewelAheadActivationValue;
+			if (closeJewels.Any()) {
+				jewelFound = closeJewels.First ().Name;
+				jewelAheadActivationValue = CurrentAgent.Parameters.MAX_ACTIVATION;
+			} else {
+				jewelFound = String.Empty;
+				jewelAheadActivationValue = CurrentAgent.Parameters.MIN_ACTIVATION;
+			}
+			si.Add(inputJewelAhead, jewelAheadActivationValue);
+
+
+
 			//Console.WriteLine(sensorialInformation);
 			Creature c = (Creature) listOfThings.Where(item => (item.CategoryId == Thing.CATEGORY_CREATURE)).First();
 			int n = 0;
@@ -256,6 +350,46 @@ namespace ClarionApp
 				mind.updateLeaflet(n,l);
 				n++;
 			}
+			mind.updateTotLeaflet ();
+
+			// Detect if has a required leaflet and prepare its position
+			IEnumerable<Thing> jewels = listOfThings.Where(item => false);
+			IEnumerable<Thing> redJewels = listOfThings.Where(item => (item.CategoryId == Thing.CATEGORY_JEWEL && item.Material.Color == "Red"));
+			double goToJewelActivationValue;
+			if (redJewels.Any () && ((mind.totLeaflet [0] - mind.red) > 0)) {
+				jewels = jewels.Concat(redJewels);
+			}
+			IEnumerable<Thing> greenJewels = listOfThings.Where(item => (item.CategoryId == Thing.CATEGORY_JEWEL && item.Material.Color == "Green"));
+			if (greenJewels.Any () && ((mind.totLeaflet [1] - mind.green) > 0)) {
+				jewels = jewels.Concat (greenJewels);
+			}
+			IEnumerable<Thing> blueJewels = listOfThings.Where(item => (item.CategoryId == Thing.CATEGORY_JEWEL && item.Material.Color == "Blue"));
+			if (blueJewels.Any () && ((mind.totLeaflet [2] - mind.blue) > 0)) {
+				jewels = jewels.Concat (blueJewels);
+			}
+			IEnumerable<Thing> yellowJewels = listOfThings.Where(item => (item.CategoryId == Thing.CATEGORY_JEWEL && item.Material.Color == "Yellow"));
+			if (yellowJewels.Any () && ((mind.totLeaflet [3] - mind.yellow) > 0)) {
+				jewels = jewels.Concat (yellowJewels);
+			}
+			IEnumerable<Thing> magentaJewels = listOfThings.Where(item => (item.CategoryId == Thing.CATEGORY_JEWEL && item.Material.Color == "Magenta"));
+			if (magentaJewels.Any () && ((mind.totLeaflet[4]-mind.magenta) > 0)) {
+				jewels = jewels.Concat (magentaJewels);
+			}
+			IEnumerable<Thing> whiteJewels = listOfThings.Where(item => (item.CategoryId == Thing.CATEGORY_JEWEL && item.Material.Color == "White"));
+			if (whiteJewels.Any () && ((mind.totLeaflet[5]-mind.white) > 0)) {
+				jewels = jewels.Concat (whiteJewels);
+			}
+
+			if (jewels.Any ()) {
+				jewels = jewels.OrderBy (item => item.DistanceToCreature);
+				x_go = jewels.First ().X1;
+				y_go = jewels.First ().Y1;
+				goToJewelActivationValue = CurrentAgent.Parameters.MAX_ACTIVATION;
+			} else {
+				goToJewelActivationValue = CurrentAgent.Parameters.MIN_ACTIVATION;
+			}
+			si.Add(inputNeedJewel, goToJewelActivationValue);
+
             return si;
         }
         #endregion
@@ -267,10 +401,28 @@ namespace ClarionApp
             return ((currentInput.Contains(inputWallAhead, CurrentAgent.Parameters.MAX_ACTIVATION))) ? 1.0 : 0.0;
         }
 
+		private double FixedRuleToEatFood(ActivationCollection currentInput, Rule target)
+		{
+			// See partial match threshold to verify what are the rules available for action selection
+			return ((currentInput.Contains(inputFoodAhead, CurrentAgent.Parameters.MAX_ACTIVATION))) ? 1.0 : 0.0;
+		}
+
+		private double FixedRuleToGetJewel(ActivationCollection currentInput, Rule target)
+		{
+			// See partial match threshold to verify what are the rules available for action selection
+			return ((currentInput.Contains(inputJewelAhead, CurrentAgent.Parameters.MAX_ACTIVATION))) ? 1.0 : 0.0;
+		}
+
+		private double FixedRuleToGoToJewel(ActivationCollection currentInput, Rule target)
+		{
+			// Here we will make the logic to go ahead
+			return ((currentInput.Contains(inputNeedJewel, CurrentAgent.Parameters.MAX_ACTIVATION))) ? 1.0 : 0.0;
+		}
+
         private double FixedRuleToGoAhead(ActivationCollection currentInput, Rule target)
         {
             // Here we will make the logic to go ahead
-            return ((currentInput.Contains(inputWallAhead, CurrentAgent.Parameters.MIN_ACTIVATION))) ? 1.0 : 0.0;
+			return ((currentInput.Contains(inputNeedJewel, CurrentAgent.Parameters.MIN_ACTIVATION))) ? 1.0 : 0.0;
         }
         #endregion
 
@@ -293,6 +445,7 @@ namespace ClarionApp
 
                 //Choose an action
                 ExternalActionChunk chosen = CurrentAgent.GetChosenExternalAction(si);
+
 
                 // Get the selected action
                 String actionLabel = chosen.LabelAsIComparable.ToString();

@@ -25,11 +25,17 @@ namespace ClarionApp
 		public MainClass() {
 			Application.Init();
 			Console.WriteLine ("ClarionApp V0.8");
+
+			RandomGenerator rg = new RandomGenerator();
+			int ws_width = 800;
+			int ws_lenght = 600;
+
 			try
             {
                 ws = new WSProxy("localhost", 4011);
 
                 String message = ws.Connect();
+
 
                 if (ws != null && ws.IsConnected)
                 {
@@ -38,25 +44,23 @@ namespace ClarionApp
                     ws.NewCreature(400, 200, 0, out creatureId, out creatureName);
 					ws.SendCreateLeaflet();
 
-					int ws_width = 800;
-					int ws_lenght = 600;
-
 					ws.NewBrick(4, 0, 0, -50, ws_lenght+50);
 					ws.NewBrick(4, 0, ws_lenght, ws_width+50, ws_lenght+50);
 					ws.NewBrick(4, ws_width, ws_lenght, ws_width + 50, -50);
 					ws.NewBrick(4, ws_width, 0, -50, -50);
 
-					RandomGenerator rg = new RandomGenerator();
+					//while (true) {
+						int nu_of_jewels = 15;
+						for(int i = 0; i < nu_of_jewels; i++){
+							ws.NewJewel(rg.randomInt(0,6), rg.randomInt(0, ws_width), rg.randomInt(0, ws_lenght));
+						}
 
-					int nu_of_jewels = 20;
-					for(int i = 0; i < nu_of_jewels; i++){
-						ws.NewJewel(rg.randomInt(0,5), rg.randomInt(0, ws_width), rg.randomInt(0, ws_lenght));
-					}
-
-					int nu_of_foods = 6;
-					for(int i = 0; i < nu_of_foods; i++){
-						ws.NewFood(rg.randomInt(0,1), rg.randomInt(0, ws_width), rg.randomInt(0, ws_lenght));
-					}
+						int nu_of_foods = 8;
+						for(int i = 0; i < nu_of_foods; i++){
+							ws.NewFood(rg.randomInt(0,2), rg.randomInt(0, ws_width), rg.randomInt(0, ws_lenght));
+						}
+						Thread.Sleep(10000);
+					//}
 
                     if (!String.IsNullOrWhiteSpace(creatureId))
                     {
@@ -68,6 +72,7 @@ namespace ClarionApp
 					agent = new ClarionAgent(ws,creatureId,creatureName);
                     agent.Run();
 					Console.Out.WriteLine("Running Simulation ...\n");
+
                 }
 				else {
 					Console.Out.WriteLine("The WorldServer3D engine was not found ! You must start WorldServer3D before running this application !");
@@ -87,6 +92,8 @@ namespace ClarionApp
                 Console.Out.WriteLine(String.Format("[ERROR] Unknown Error: {0}\n", ex.Message));
             }
 			Application.Run();
+
+
 		}
 		#endregion
 

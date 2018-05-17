@@ -17,6 +17,7 @@ namespace ClarionApp
 		public int[] leaflet1 = new int[6];
 		public int[] leaflet2 = new int[6];
 		public int[] leaflet3 = new int[6];
+		public int[] totLeaflet = new int[6];
 
 		public MindViewer () : base(Gtk.WindowType.Toplevel)
 		{
@@ -74,6 +75,16 @@ namespace ClarionApp
 				        break;
 			    default: break;
 			}
+
+		}
+
+		public void updateTotLeaflet(){
+			totLeaflet [0] = leaflet1 [0] + leaflet2 [0] + leaflet3 [0];
+			totLeaflet [1] = leaflet1 [1] + leaflet2 [1] + leaflet3 [1];
+			totLeaflet [2] = leaflet1 [2] + leaflet2 [2] + leaflet3 [2];
+			totLeaflet [3] = leaflet1 [3] + leaflet2 [3] + leaflet3 [3];
+			totLeaflet [4] = leaflet1 [4] + leaflet2 [4] + leaflet3 [4];
+			totLeaflet [5] = leaflet1 [5] + leaflet2 [5] + leaflet3 [5];
 		}
 
 		public void update() {
