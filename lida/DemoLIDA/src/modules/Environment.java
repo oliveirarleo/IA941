@@ -45,13 +45,14 @@ public class Environment extends EnvironmentImpl {
         try {
             System.out.println("Reseting the WS3D World ...");
             proxy.getWorld().reset();
-            creature = proxy.createCreature(700, 0, 0);
+            creature = proxy.createCreature(800, 800, 0);
             creature.start();
             System.out.println("Starting the WS3D Resource Generator ... ");
 //            World.grow(1);
             World.createBrick(1, 100, 0, 150, 450);
             World.createBrick(2, 250, 150, 300, 600);
             World.createBrick(3, 400, 0, 450, 450);
+            World.createBrick(3, 550, 150, 700, 600);
             Thread.sleep(4000);
             creature.updateState();
             System.out.println("DemoLIDA has started...");
@@ -120,7 +121,6 @@ public class Environment extends EnvironmentImpl {
             }
         }
         
-        
         if(wall != null){
             double wX1 = wall.getX1();
             double wY1 = wall.getY1();
@@ -132,15 +132,15 @@ public class Environment extends EnvironmentImpl {
             if((wall.getY1()) < 10){
                 wallX = wall.getX2() + 60;
                 wallY = wall.getY2() + 60;
-                if(cY > wY2)
+                if(cY > wY2+30)
                     wallX = wall.getX1()-50;
                     
             }
 //                Avoid from the right
             else{
                 wallX = wall.getX2() + 60;
-                wallY = wall.getY1() - 120;
-                if(cY < wY1)
+                wallY = wall.getY1() - 60;
+                if(cY < wY1-50)
                     wallX = wall.getX1()-50;
             }
         }
