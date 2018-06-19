@@ -10,6 +10,7 @@ import ws3dproxy.model.Creature;
 import ws3dproxy.model.Leaflet;
 import ws3dproxy.model.Thing;
 import ws3dproxy.model.World;
+import ws3dproxy.model.WorldMap;
 import ws3dproxy.util.Constants;
 
 public class Environment extends EnvironmentImpl {
@@ -18,22 +19,21 @@ public class Environment extends EnvironmentImpl {
     private int ticksPerRun;
     private WS3DProxy proxy;
     private Creature creature;
-    private Thing food;
-    private Thing jewel;
+    private Thing wall;
     private List<Thing> thingAhead;
-    private Thing leafletJewel;
     private String currentAction;   
     private String command;
+    
+    private double wallX;
+    private double wallY;
     
     public Environment() {
         this.ticksPerRun = DEFAULT_TICKS_PER_RUN;
         this.proxy = new WS3DProxy();
         this.creature = null;
-        this.food = null;
-        this.jewel = null;
+        this.wall = null;
         this.thingAhead = new ArrayList<>();
-        this.leafletJewel = null;
-        this.currentAction = "rotate";
+        this.currentAction = "gotoOrigin";
     }
 
     @Override
@@ -45,10 +45,13 @@ public class Environment extends EnvironmentImpl {
         try {
             System.out.println("Reseting the WS3D World ...");
             proxy.getWorld().reset();
-            creature = proxy.createCreature(100, 100, 0);
+            creature = proxy.createCreature(700, 0, 0);
             creature.start();
             System.out.println("Starting the WS3D Resource Generator ... ");
-            World.grow(1);
+//            World.grow(1);
+            World.createBrick(1, 100, 0, 150, 450);
+            World.createBrick(2, 250, 150, 300, 600);
+            World.createBrick(3, 400, 0, 450, 450);
             Thread.sleep(4000);
             creature.updateState();
             System.out.println("DemoLIDA has started...");
@@ -72,7 +75,7 @@ public class Environment extends EnvironmentImpl {
 
     @Override
     public void resetState() {
-        currentAction = "rotate";
+        currentAction = "gotoOrigin";
     }
 
     @Override
@@ -80,17 +83,11 @@ public class Environment extends EnvironmentImpl {
         Object requestedObject = null;
         String mode = (String) params.get("mode");
         switch (mode) {
-            case "food":
-                requestedObject = food;
-                break;
-            case "jewel":
-                requestedObject = jewel;
+            case "wall":
+                requestedObject = wall;
                 break;
             case "thingAhead":
                 requestedObject = thingAhead;
-                break;
-            case "leafletJewel":
-                requestedObject = leafletJewel;
                 break;
             default:
                 break;
@@ -101,40 +98,56 @@ public class Environment extends EnvironmentImpl {
     
     public void updateEnvironment() {
         creature.updateState();
-        food = null;
-        jewel = null;
-        leafletJewel = null;
         thingAhead.clear();
-                
+        
+        
+        
+        double x2 = 99999;
         for (Thing thing : creature.getThingsInVision()) {
-            if (creature.calculateDistanceTo(thing) <= Constants.OFFSET) {
+            if (creature.calculateDistanceTo(thing) <= 200 ) {
                 // Identifica o objeto proximo
-                thingAhead.add(thing);
-                break;
-            } else if (thing.getCategory() == Constants.categoryJEWEL) {
-                if (leafletJewel == null) {
-                    // Identifica se a joia esta no leaflet
-                    for(Leaflet leaflet: creature.getLeaflets()){
-                        if (leaflet.ifInLeaflet(thing.getMaterial().getColorName()) &&
-                                leaflet.getTotalNumberOfType(thing.getMaterial().getColorName()) > leaflet.getCollectedNumberOfType(thing.getMaterial().getColorName())){
-                            leafletJewel = thing;
-                            break;
+                if(thing.getCategory() == Constants.categoryBRICK){
+                    if(thing.getX2() < x2){
+                        if(wall == null || wall.getX1()-40 > creature.getAttributes().getX1()){
+                            wall = thing;
+                            x2 = thing.getX2();
                         }
+                    
                     }
-                } else {
-                    // Identifica a joia que nao esta no leaflet
-                    jewel = thing;
+                }else{
+                    thingAhead.add(thing);
                 }
-            } else if (food == null && creature.getFuel() <= 300.0
-                        && (thing.getCategory() == Constants.categoryFOOD
-                        || thing.getCategory() == Constants.categoryPFOOD
-                        || thing.getCategory() == Constants.categoryNPFOOD)) {
-                
-                    // Identifica qualquer tipo de comida
-                    food = thing;
             }
-           
         }
+        
+        
+        if(wall != null){
+            double wX1 = wall.getX1();
+            double wY1 = wall.getY1();
+            double wX2 = wall.getX2();
+            double wY2 = wall.getY2();
+            double cX = creature.getAttributes().getX1();
+            double cY = creature.getAttributes().getY1();
+//            Avoid from the left
+            if((wall.getY1()) < 10){
+                wallX = wall.getX2() + 60;
+                wallY = wall.getY2() + 60;
+                if(cY > wY2)
+                    wallX = wall.getX1()-50;
+                    
+            }
+//                Avoid from the right
+            else{
+                wallX = wall.getX2() + 60;
+                wallY = wall.getY1() - 120;
+                if(cY < wY1)
+                    wallX = wall.getX1()-50;
+            }
+        }
+        
+        if(wall != null && wall.getX1()-40 > creature.getAttributes().getX1())
+            wall = null;
+                    
     }
     
     
@@ -153,25 +166,16 @@ public class Environment extends EnvironmentImpl {
     private void performAction(String currentAction) {
         try {
             command = currentAction;
-            //System.out.println("Action: "+currentAction);
             switch (currentAction) {
-                case "rotate":
-                    creature.rotate(1.0);
-                    //CommandUtility.sendSetTurn(creature.getIndex(), -1.0, -1.0, 3.0);
+                case "avoidWall":
+                    if(wall != null)
+                        creature.moveto(3.0, wallX, wallY);
                     break;
-                case "gotoFood":
-                    if (food != null) 
-                        creature.moveto(3.0, food.getX1(), food.getY1());
-                        //CommandUtility.sendGoTo(creature.getIndex(), 3.0, 3.0, food.getX1(), food.getY1());
+                case "gotoOrigin":
+                    creature.moveto(6.0, 0, 0);
                     break;
-                case "gotoJewel":
-                    if (leafletJewel != null)
-                        creature.moveto(3.0, leafletJewel.getX1(), leafletJewel.getY1());
-                        //CommandUtility.sendGoTo(creature.getIndex(), 3.0, 3.0, leafletJewel.getX1(), leafletJewel.getY1());
-                    break;                    
                 case "get":
                     creature.move(0.0, 0.0, 0.0);
-                    //CommandUtility.sendSetTurn(creature.getIndex(), 0.0, 0.0, 0.0);
                     if (thingAhead != null) {
                         for (Thing thing : thingAhead) {
                             if (thing.getCategory() == Constants.categoryJEWEL) {

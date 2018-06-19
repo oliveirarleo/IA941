@@ -10,34 +10,27 @@ import ws3dproxy.model.Thing;
 public class SensoryMemory extends SensoryMemoryImpl {
 
     private Map<String, Object> sensorParam;
-    private Thing food;
-    private Thing jewel;
-    private List<Thing> thingAhead;
-    private Thing leafletJewel;
+    private Thing wall;
+    private List<Thing> things;
 
     public SensoryMemory() {
         this.sensorParam = new HashMap<>();
-        this.food = null;
-        this.jewel = null;
-        this.thingAhead = new ArrayList<>();
-        this.leafletJewel = null;
+        this.wall = null;
+        this.things = new ArrayList<>();
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public void runSensors() {
         sensorParam.clear();
-        sensorParam.put("mode", "food");
-        food = (Thing) environment.getState(sensorParam);
-        sensorParam.clear();
-        sensorParam.put("mode", "jewel");
-        jewel = (Thing) environment.getState(sensorParam);
+        sensorParam.put("mode", "wall");
+        wall = (Thing) environment.getState(sensorParam);
         sensorParam.clear();
         sensorParam.put("mode", "thingAhead");
-        thingAhead = (List<Thing>) environment.getState(sensorParam);
+        things = (List<Thing>) environment.getState(sensorParam);
         sensorParam.clear();
-        sensorParam.put("mode", "leafletJewel");
-        leafletJewel = (Thing) environment.getState(sensorParam);
+        sensorParam.put("mode", "nowall");
+        sensorParam.clear();
     }
 
     @Override
@@ -45,17 +38,11 @@ public class SensoryMemory extends SensoryMemoryImpl {
         Object requestedObject = null;
         String mode = (String) params.get("mode");
         switch (mode) {
-            case "food":
-                requestedObject = food;
-                break;
-            case "jewel":
-                requestedObject = jewel;
+            case "wall":
+                requestedObject = wall;
                 break;
             case "thingAhead":
-                requestedObject = thingAhead;
-                break;
-            case "leafletJewel":
-                requestedObject = leafletJewel;
+                requestedObject = things;
                 break;
             default:
                 break;
