@@ -19,6 +19,8 @@
 
 package support;
 
+import br.unicamp.cst.core.entities.Memory;
+import br.unicamp.cst.core.entities.MemoryContainer;
 import br.unicamp.cst.core.entities.MemoryObject;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,6 +56,7 @@ public class MindView extends javax.swing.JFrame {
 
     Timer t;
     List<MemoryObject> mol = new ArrayList<>();
+    List<MemoryContainer> mcl = new ArrayList<>();
     int j=0;
     Random r = new Random();
     /**
@@ -66,6 +69,11 @@ public class MindView extends javax.swing.JFrame {
     
     public void addMO(MemoryObject moi) {
         mol.add(moi);
+    }
+    
+    
+    public void addMC(MemoryContainer mci) {
+        mcl.add(mci);
     }
     
     public void StartTimer() {
@@ -106,7 +114,21 @@ public class MindView extends javax.swing.JFrame {
                 else
                     //alltext += mo.getName()+": "+mo.getI()+"\n";
                     alltext += mo.getName()+":\n";
-            }   
+            }
+            for(MemoryContainer mc: mcl){
+                String mcName = mc.getName();
+                if(mcName.equals("LEGS_CONTAINER")){
+                    alltext += mcName +":\n";
+                    ArrayList<Memory> memories = mc.getAllMemories();
+                    alltext += "[\n";
+                    for(Memory m: memories){
+                        
+                        alltext += ((MemoryObject) m).getI()+", " + ((MemoryObject) m).getEvaluation() + " \n";
+                    }
+                    alltext += "]\n";
+                }
+                
+            }
         text.setText(alltext);
         j++;
         if (j == 7) {

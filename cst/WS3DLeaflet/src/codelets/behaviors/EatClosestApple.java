@@ -132,6 +132,7 @@ public class EatClosestApple extends Codelet {
               i++;
              }   
              if (r != -1) known.remove(r);
+             knownMO.setI(known);
              closestApple = null;
            }
         }

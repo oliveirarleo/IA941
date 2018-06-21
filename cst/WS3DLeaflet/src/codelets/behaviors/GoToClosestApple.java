@@ -25,6 +25,7 @@ import java.awt.geom.Point2D;
 import org.json.JSONException;
 import org.json.JSONObject;
 import br.unicamp.cst.core.entities.Codelet;
+import br.unicamp.cst.core.entities.MemoryContainer;
 import br.unicamp.cst.core.entities.MemoryObject;
 import memory.CreatureInnerSense;
 import ws3dproxy.model.Thing;
@@ -33,7 +34,8 @@ public class GoToClosestApple extends Codelet {
 
 	private MemoryObject closestAppleMO;
 	private MemoryObject selfInfoMO;
-	private MemoryObject legsMO;
+	private MemoryContainer legsMC;
+        private int legsMCID = -1;
 	private int creatureBasicSpeed;
 	private double reachDistance;
 
@@ -46,7 +48,7 @@ public class GoToClosestApple extends Codelet {
 	public void accessMemoryObjects() {
 		closestAppleMO=(MemoryObject)this.getInput("CLOSEST_APPLE");
 		selfInfoMO=(MemoryObject)this.getInput("INNER");
-		legsMO=(MemoryObject)this.getOutput("LEGS");
+		legsMC=(MemoryContainer)this.getOutput("LEGS_CONTAINER");
 	}
 
 	@Override
@@ -87,14 +89,22 @@ public class GoToClosestApple extends Codelet {
 					message.put("X", (int)appleX);
 					message.put("Y", (int)appleY);
                                         message.put("SPEED", creatureBasicSpeed);	
-
+                                        if(legsMCID == -1)
+                                            legsMCID = legsMC.setI(message.toString(), 0.6);
+                                        else
+                                            legsMC.setI(message.toString(), 0.6, legsMCID);
 				}else{//Stop
 					message.put("ACTION", "GOTO");
 					message.put("X", (int)appleX);
 					message.put("Y", (int)appleY);
-                                        message.put("SPEED", 0.0);	
+                                        message.put("SPEED", 0.0);
+                                        if(legsMCID == -1)
+                                            legsMCID = legsMC.setI(message.toString(), 0.1);
+                                        else
+                                            legsMC.setI(message.toString(), 0.1, legsMCID);
 				}
-				legsMO.updateI(message.toString());
+                                
+                                
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}	
