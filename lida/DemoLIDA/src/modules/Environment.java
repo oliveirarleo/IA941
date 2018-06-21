@@ -109,7 +109,7 @@ public class Environment extends EnvironmentImpl {
                 // Identifica o objeto proximo
                 if(thing.getCategory() == Constants.categoryBRICK){
                     if(thing.getX2() < x2){
-                        if(wall == null || wall.getX1()-40 > creature.getAttributes().getX1()){
+                        if(wall == null || (thing.getX1() > wall.getX1() && thing.getX1() < creature.getAttributes().getX1()) ){
                             wall = thing;
                             x2 = thing.getX2();
                         }
