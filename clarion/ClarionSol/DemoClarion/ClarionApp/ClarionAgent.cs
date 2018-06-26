@@ -203,24 +203,24 @@ namespace ClarionApp
 					// Do nothing as the own value says
 					break;
 				case CreatureActions.ROTATE_CLOCKWISE:
-					worldServer.SendSetAngle(creatureId, 2, -2, 2);
+					worldServer.SendSetAngle(creatureId, 1, -1, 2);
 					break;
 				case CreatureActions.GO_AHEAD:
 					//worldServer.SendSetAngle(creatureId, 1, 1, prad);
-					worldServer.SendSetAngle(creatureId, 2, -2, 2);
+					worldServer.SendSetAngle(creatureId, 1, -1, 2);
 					break;
 				case CreatureActions.EAT_FOOD:
 					// CHANGE
 					if(foodFound != String.Empty)
 						worldServer.SendEatIt (creatureId, foodFound);
 					else
-						worldServer.SendSetAngle(creatureId, 2, -2, 2);
+						worldServer.SendSetAngle(creatureId, 1, -1, 2);
 					break;
 				case CreatureActions.GET_JEWEL:
 					if(jewelFound != String.Empty)
 						worldServer.SendSackIt (creatureId, jewelFound);
 					else
-						worldServer.SendSetAngle(creatureId, 2, -2, 2);
+						worldServer.SendSetAngle(creatureId, 1, -1, 2);
 					break;
 				case CreatureActions.GO_TO_JEWEL:
 					worldServer.SendSetGoTo(creatureId, 1, 1, x_go, y_go);
