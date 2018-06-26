@@ -52,7 +52,7 @@ public class Environment {
              }
              
              
-             c = proxy.createCreature(100,450,0);
+             c = proxy.createCreature(100,100,0, 1);
              c.start();
              //c.setRobotID("r0");
              //c.startCamera("r0");

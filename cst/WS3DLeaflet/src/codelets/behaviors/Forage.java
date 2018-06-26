@@ -70,7 +70,7 @@ public class Forage extends Codelet {
 
 	@Override
 	public void accessMemoryObjects() {
-            knownMO = (MemoryObject)this.getInput("KNOWN_APPLES");
+            knownMO = (MemoryObject)this.getInput("KNOWN_THINGS");
             legsMC=(MemoryContainer)this.getOutput("LEGS_CONTAINER");
 
 		// TODO Auto-generated method stub
