@@ -158,6 +158,7 @@ public class MindView extends javax.swing.JFrame {
 
         text.setColumns(20);
         text.setRows(5);
+        text.setPreferredSize(null);
         jScrollPane1.setViewportView(text);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());

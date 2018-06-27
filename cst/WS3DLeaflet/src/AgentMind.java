@@ -21,20 +21,23 @@ import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.MemoryContainer;
 import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.core.entities.Mind;
-import codelets.behaviors.EatClosestApple;
+import codelets.behaviors.GetClosestThing;
 import codelets.behaviors.Forage;
-import codelets.behaviors.GoToClosestApple;
+import codelets.behaviors.GoToClosestThing;
 import codelets.motor.HandsActionCodelet;
 import codelets.motor.LegsActionCodelet;
-import codelets.perception.AppleDetector;
-import codelets.perception.ClosestAppleDetector;
+import codelets.perception.ThingDetector;
+import codelets.perception.ClosestThingDetector;
 import codelets.sensors.InnerSense;
 import codelets.sensors.Vision;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import memory.CreatureInnerSense;
 import support.MindView;
+import ws3dproxy.model.Leaflet;
 import ws3dproxy.model.Thing;
 
 /**
@@ -54,8 +57,9 @@ public class AgentMind extends Mind {
 	        MemoryObject handsMO;
                 MemoryObject visionMO;
                 MemoryObject innerSenseMO;
-                MemoryObject closestAppleMO;
-                MemoryObject knownApplesMO;
+                MemoryObject closestThingMO;
+                MemoryObject knownThingsMO;
+                MemoryObject leafletJewelsMO;
                 
                 //Initialize Memory Objects
                 legsMC=createMemoryContainer("LEGS_CONTAINER");
@@ -64,16 +68,45 @@ public class AgentMind extends Mind {
 		visionMO=createMemoryObject("VISION",vision_list);
                 CreatureInnerSense cis = new CreatureInnerSense();
 		innerSenseMO=createMemoryObject("INNER", cis);
-                Thing closestApple = null;
-                closestAppleMO=createMemoryObject("CLOSEST_APPLE", closestApple);
-                List<Thing> knownApples = Collections.synchronizedList(new ArrayList<Thing>());
-                knownApplesMO=createMemoryObject("KNOWN_APPLES", knownApples);
+                Thing closestThing = null;
+                closestThingMO=createMemoryObject("CLOSEST_THING", closestThing);
+                List<Thing> knownThings = Collections.synchronizedList(new ArrayList<Thing>());
+                knownThingsMO=createMemoryObject("KNOWN_THINGS", knownThings);
+                Map<String, Integer> leafletJewels = Collections.synchronizedMap(new HashMap<String, Integer>());
+
+                List<Leaflet> leafs = env.c.getLeaflets();
+                
+                System.out.println("num of leaflets " + leafs.size());
+                for(Leaflet l: leafs){
+                    HashMap<String, Integer> missingTypes = l.getWhatToCollect();
+                    
+                    System.out.println("OOO");
+                    for(String s: missingTypes.keySet()){
+                        System.out.println(s + " " + missingTypes.get(s));
+                    }
+                    
+                    if(leafletJewels.isEmpty())
+                        leafletJewels.putAll(missingTypes);
+                    else{
+                        for(String key: missingTypes.keySet()){
+                            if(leafletJewels.containsKey(key)){
+                                leafletJewels.replace(key, leafletJewels.get(key)+ missingTypes.get(key) );
+                            }
+                        }
+                    }
+                }
+                
+                for(String s: leafletJewels.keySet()){
+                    System.out.println(s + " " + leafletJewels.get(s));
+                }
+                
+                leafletJewelsMO=createMemoryObject("LEAFLET_JEWELS", leafletJewels);
                 
                 // Create and Populate MindViewer
                 MindView mv = new MindView("MindView");
-                mv.addMO(knownApplesMO);
+                mv.addMO(knownThingsMO);
                 mv.addMO(visionMO);
-                mv.addMO(closestAppleMO);
+                mv.addMO(closestThingMO);
                 mv.addMO(innerSenseMO);
                 mv.addMO(handsMO);
                 mv.addMC(legsMC);
@@ -99,33 +132,33 @@ public class AgentMind extends Mind {
                 insertCodelet(hands);
 		
 		// Create Perception Codelets
-                Codelet ad = new AppleDetector();
+                Codelet ad = new ThingDetector();
                 ad.addInput(visionMO);
-                ad.addOutput(knownApplesMO);
+                ad.addOutput(knownThingsMO);
                 insertCodelet(ad);
                 
-		Codelet closestAppleDetector = new ClosestAppleDetector();
-		closestAppleDetector.addInput(knownApplesMO);
+		Codelet closestAppleDetector = new ClosestThingDetector();
+		closestAppleDetector.addInput(knownThingsMO);
 		closestAppleDetector.addInput(innerSenseMO);
-		closestAppleDetector.addOutput(closestAppleMO);
+		closestAppleDetector.addOutput(closestThingMO);
                 insertCodelet(closestAppleDetector);
 		
 		// Create Behavior Codelets
-		Codelet goToClosestApple = new GoToClosestApple(creatureBasicSpeed,reachDistance);
-		goToClosestApple.addInput(closestAppleMO);
+		Codelet goToClosestApple = new GoToClosestThing(creatureBasicSpeed,reachDistance);
+		goToClosestApple.addInput(closestThingMO);
 		goToClosestApple.addInput(innerSenseMO);
 		goToClosestApple.addOutput(legsMC);
                 insertCodelet(goToClosestApple);
 		
-		Codelet eatApple=new EatClosestApple(reachDistance);
-		eatApple.addInput(closestAppleMO);
+		Codelet eatApple=new GetClosestThing(reachDistance);
+		eatApple.addInput(closestThingMO);
 		eatApple.addInput(innerSenseMO);
 		eatApple.addOutput(handsMO);
-                eatApple.addOutput(knownApplesMO);
+                eatApple.addOutput(knownThingsMO);
                 insertCodelet(eatApple);
                 
                 Codelet forage=new Forage();
-		forage.addInput(knownApplesMO);
+		forage.addInput(knownThingsMO);
                 forage.addOutput(legsMC);
                 insertCodelet(forage);
                 
