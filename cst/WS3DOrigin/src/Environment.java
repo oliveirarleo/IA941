@@ -12,58 +12,50 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  * Contributors:
  *    Klaus Raizer, Andre Paraense, Ricardo Ribeiro Gudwin
  *****************************************************************************/
 
 import java.util.Random;
+
 import ws3dproxy.CommandExecException;
 import ws3dproxy.WS3DProxy;
 import ws3dproxy.model.Creature;
 import ws3dproxy.model.World;
 
 /**
- *
  * @author rgudwin
  */
 public class Environment {
-    
-    public String host="localhost";
+
+    public String host = "localhost";
     public int port = 4011;
-    public String robotID="r0";
+    public String robotID = "r0";
     public Creature c = null;
-    
+
     public Environment() {
-          WS3DProxy proxy = new WS3DProxy();
-          try {   
-             World w = World.getInstance();
-             w.reset();
-             World.createFood(0, 350, 75);
-             World.createFood(0, 100, 220);
-             World.createFood(0, 250, 210);
-             
-             Random rand = new Random();
-             int numJoias = 8;
-             for(int i = 0; i < numJoias;i++){
-                 World.createJewel(rand.nextInt(6),
-                     rand.nextInt(w.getEnvironmentWidth()+1),
-                     rand.nextInt(w.getEnvironmentHeight()+1));
-             }
-             
-             
-             c = proxy.createCreature(100,450,0);
-             c.start();
-             //c.setRobotID("r0");
-             //c.startCamera("r0");
-             
-             
-          } catch (CommandExecException e) {
-              
-          }
-          System.out.println("Robot "+c.getName()+" is ready to go.");
-		
+        WS3DProxy proxy = new WS3DProxy();
+        try {
+            World w = World.getInstance();
+            w.reset();
+            World.createBrick(1, 100, 0, 150, 450);
+            World.createBrick(2, 250, 150, 300, 600);
+            World.createBrick(3, 400, 0, 450, 450);
+            World.createBrick(3, 550, 150, 700, 600);
 
 
-	}
+            c = proxy.createCreature(800, 800, 0);
+            c.start();
+            //c.setRobotID("r0");
+            //c.startCamera("r0");
+
+
+        } catch (CommandExecException e) {
+
+        }
+        System.out.println("Robot " + c.getName() + " is ready to go.");
+
+
+    }
 }

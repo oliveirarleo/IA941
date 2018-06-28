@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  * Contributors:
  *    Klaus Raizer, Andre Paraense, Ricardo Ribeiro Gudwin
  *****************************************************************************/
@@ -22,65 +22,62 @@ package codelets.behaviors;
 import br.unicamp.cst.core.entities.Codelet;
 import br.unicamp.cst.core.entities.MemoryContainer;
 import br.unicamp.cst.core.entities.MemoryObject;
+
 import java.util.List;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import ws3dproxy.model.Thing;
 
-/** 
- * 
+/**
  * @author klaus
- * 
- * 
  */
 
 public class Forage extends Codelet {
-    
-        private MemoryObject knownMO;
-        private List<Thing> known;
-        private MemoryContainer legsMC;
-        private int legsMCID = -1;
+
+    private MemoryObject knownMO;
+    private List<Thing> known;
+    private MemoryContainer legsMC;
+    private int legsMCID = -1;
 
 
-	/**
-	 * Default constructor
-	 */
-	public Forage(){       
-	}
+    /**
+     * Default constructor
+     */
+    public Forage() {
+    }
 
-	@Override
-	public void proc() {
-            known = (List<Thing>) knownMO.getI();
-            if (known.size() == 0) {
-		JSONObject message=new JSONObject();
-			try {
-				message.put("ACTION", "FORAGE");
-                                if(legsMCID == -1)
-                                    legsMCID = legsMC.setI(message.toString(), 0.5);
-                                else
-                                    legsMC.setI(message.toString(), 0.5, legsMCID);
-			
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-            }            
-		
-	}
+    @Override
+    public void proc() {
+        JSONObject message = new JSONObject();
+        try {
+            message.put("ACTION", "FORAGE");
+            if (legsMCID == -1)
+                legsMCID = legsMC.setI(message.toString(), 0.5);
+            else
+                legsMC.setI(message.toString(), 0.5, legsMCID);
 
-	@Override
-	public void accessMemoryObjects() {
-            knownMO = (MemoryObject)this.getInput("KNOWN_THINGS");
-            legsMC=(MemoryContainer)this.getOutput("LEGS_CONTAINER");
-
-		// TODO Auto-generated method stub
-		
-	}
-        
-        @Override
-        public void calculateActivation() {
-            
+        } catch (JSONException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
+
+
+    }
+
+    @Override
+    public void accessMemoryObjects() {
+        knownMO = (MemoryObject) this.getInput("KNOWN_THINGS");
+        legsMC = (MemoryContainer) this.getOutput("LEGS_CONTAINER");
+
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void calculateActivation() {
+
+    }
 
 
 }

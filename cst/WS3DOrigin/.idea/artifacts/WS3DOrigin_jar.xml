@@ -1,0 +1,15 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="WS3DOrigin:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/WS3DOrigin_jar</output-path>
+    <root id="archive" name="WS3DOrigin.jar">
+      <element id="module-output" name="WS3DOrigin" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/jfreechart-1.0.13.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/json.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/cst.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/log4j-1.2.16.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/junit-4.9b4.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/WS3DProxy.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/jcommon-1.0.16.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
