@@ -45,7 +45,7 @@ public class GetClosestThing extends Codelet {
     private MemoryObject leafletJewelsMO;
     private int reachDistance;
     private MemoryObject handsMO;
-    Thing closesThing;
+    Thing closestThing;
     Thing lastThingRemoved = null;
     CreatureInnerSense cis;
     List<Thing> known;
@@ -68,20 +68,20 @@ public class GetClosestThing extends Codelet {
     @Override
     public void proc() {
         String appleName = "";
-        closesThing = (Thing) closestThingMO.getI();
+        closestThing = (Thing) closestThingMO.getI();
         cis = (CreatureInnerSense) innerSenseMO.getI();
         known = (List<Thing>) knownMO.getI();
         lj = (Map<String, Integer>) leafletJewelsMO.getI();
         //Find distance between closest apple and self
         //If closer than reachDistance, eat the apple
 
-        if (closesThing != null) {
+        if (closestThing != null) {
             double thingX = 0;
             double thingY = 0;
             try {
-                thingX = closesThing.getX1();
-                thingY = closesThing.getY1();
-                appleName = closesThing.getName();
+                thingX = closestThing.getX1();
+                thingY = closestThing.getY1();
+                appleName = closestThing.getName();
 
 
             } catch (Exception e) {
@@ -103,7 +103,7 @@ public class GetClosestThing extends Codelet {
             try {
                 if (distance < reachDistance) {
                     message.put("OBJECT", appleName);
-                    if(closesThing.getCategory() == Constants.categoryJEWEL)
+                    if(closestThing.getCategory() == Constants.categoryJEWEL)
                         message.put("ACTION", "PICKUP");
                     else
                         message.put("ACTION", "EATIT");
@@ -140,8 +140,8 @@ public class GetClosestThing extends Codelet {
 
                 CopyOnWriteArrayList<Thing> myknown = new CopyOnWriteArrayList<>(known);
                 for (Thing t : known) {
-                    if (closesThing != null) {
-                        if (t.getName().equals(closesThing.getName())) r = i;
+                    if (closestThing != null) {
+                        if (t.getName().equals(closestThing.getName())) r = i;
                     }
                     i++;
                 }
@@ -151,8 +151,8 @@ public class GetClosestThing extends Codelet {
 
                 }
                 synchronized (lj) {
-                    String colorName = closesThing.getMaterial().getColorName();
-                    if(lj.containsKey(colorName) && (lastThingRemoved == null || !lastThingRemoved.getName().equals(closesThing.getName())))
+                    String colorName = closestThing.getMaterial().getColorName();
+                    if(lj.containsKey(colorName) && (lastThingRemoved == null || !lastThingRemoved.getName().equals(closestThing.getName())))
                     {
                         int numJewels = lj.get(colorName);
                         lj.replace(colorName,  numJewels- 1);
@@ -160,8 +160,8 @@ public class GetClosestThing extends Codelet {
                     }
                 leafletJewelsMO.setI(lj);
                 knownMO.setI(known);
-                lastThingRemoved = closesThing;
-                closesThing = null;
+                lastThingRemoved = closestThing;
+                closestThing = null;
             }
         }
     }

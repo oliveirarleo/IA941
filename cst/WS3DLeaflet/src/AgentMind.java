@@ -23,12 +23,11 @@ import br.unicamp.cst.core.entities.MemoryObject;
 import br.unicamp.cst.core.entities.Mind;
 import codelets.behaviors.GetClosestThing;
 import codelets.behaviors.Forage;
-import codelets.behaviors.GoToClosestThing;
+import codelets.behaviors.GoToAppleOrLeafletJewel;
 import codelets.motor.HandsActionCodelet;
 import codelets.motor.LegsActionCodelet;
 import codelets.perception.FoodOrLeafletJewelDetector;
 import codelets.perception.ThingDetector;
-import codelets.perception.ClosestThingDetector;
 import codelets.sensors.InnerSense;
 import codelets.sensors.Vision;
 
@@ -147,12 +146,6 @@ public class AgentMind extends Mind {
         ad.addOutput(knownThingsMO);
         insertCodelet(ad);
 
-        Codelet closestThingDetector = new ClosestThingDetector();
-        closestThingDetector.addInput(knownThingsMO);
-        closestThingDetector.addInput(innerSenseMO);
-        closestThingDetector.addOutput(closestThingMO);
-        insertCodelet(closestThingDetector);
-
         Codelet foodLeafletDetector = new FoodOrLeafletJewelDetector();
         foodLeafletDetector.addInput(leafletJewelsMO);
         foodLeafletDetector.addInput(knownThingsMO);
@@ -162,23 +155,21 @@ public class AgentMind extends Mind {
 
         // Create Behavior Codelets
         Codelet forage = new Forage();
-        forage.addInput(knownThingsMO);
         forage.addOutput(legsMC);
         insertCodelet(forage);
 
-        Codelet goToClosestThing = new GoToClosestThing(creatureBasicSpeed, reachDistance);
+        Codelet goToClosestThing = new GoToAppleOrLeafletJewel(creatureBasicSpeed, reachDistance);
         goToClosestThing.addInput(foodLeafletMO);
-        goToClosestThing.addInput(innerSenseMO);
         goToClosestThing.addOutput(legsMC);
         insertCodelet(goToClosestThing);
 
-        Codelet eatApple = new GetClosestThing(reachDistance);
-        eatApple.addInput(closestThingMO);
-        eatApple.addInput(leafletJewelsMO);
-        eatApple.addInput(innerSenseMO);
-        eatApple.addOutput(handsMO);
-        eatApple.addOutput(knownThingsMO);
-        insertCodelet(eatApple);
+        Codelet getThing = new GetClosestThing(reachDistance);
+        getThing.addInput(closestThingMO);
+        getThing.addInput(leafletJewelsMO);
+        getThing.addInput(innerSenseMO);
+        getThing.addOutput(handsMO);
+        getThing.addOutput(knownThingsMO);
+        insertCodelet(getThing);
 
 
 

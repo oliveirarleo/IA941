@@ -131,14 +131,7 @@ public class MindView extends javax.swing.JFrame {
         }
         text.setText(alltext);
         j++;
-        if (j == 7) {
-            try {
-                World.createFood(0, r.nextInt(800), r.nextInt(600));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            j = 0;
-        }
+
         //System.out.println("i");
     }
 

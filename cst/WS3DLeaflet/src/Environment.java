@@ -47,6 +47,9 @@ public class Environment {
                         rand.nextInt(w.getEnvironmentWidth() + 1),
                         rand.nextInt(w.getEnvironmentHeight() + 1));
             }
+            World.createFood(0, rand.nextInt(800), rand.nextInt(600));
+            World.createFood(0, rand.nextInt(800), rand.nextInt(600));
+            World.createFood(0, rand.nextInt(800), rand.nextInt(600));
 
 
             c = proxy.createCreature(100, 100, 0, 1);

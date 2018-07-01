@@ -30,6 +30,7 @@ import java.util.Random;
 import java.util.logging.Logger;
 
 import ws3dproxy.model.Creature;
+import ws3dproxy.model.World;
 
 /**
  * Hands Action Codelet monitors working storage for instructions and acts on the World accordingly.
@@ -80,6 +81,7 @@ public class HandsActionCodelet extends Codelet {
                     if (action.equals("EATIT")) {
                         try {
                             c.eatIt(objectName);
+                            World.createFood(0, r.nextInt(800), r.nextInt(600));
                         } catch (Exception e) {
 
                         }

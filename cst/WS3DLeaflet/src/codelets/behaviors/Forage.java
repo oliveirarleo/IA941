@@ -34,9 +34,6 @@ import ws3dproxy.model.Thing;
  */
 
 public class Forage extends Codelet {
-
-    private MemoryObject knownMO;
-    private List<Thing> known;
     private MemoryContainer legsMC;
     private int legsMCID = -1;
 
@@ -67,7 +64,6 @@ public class Forage extends Codelet {
 
     @Override
     public void accessMemoryObjects() {
-        knownMO = (MemoryObject) this.getInput("KNOWN_THINGS");
         legsMC = (MemoryContainer) this.getOutput("LEGS_CONTAINER");
 
         // TODO Auto-generated method stub
